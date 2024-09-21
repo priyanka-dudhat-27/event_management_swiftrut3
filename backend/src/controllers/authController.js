@@ -58,12 +58,12 @@ const login = async (req, res) => {
           var token = jwt.sign({ _id: checkEmail.id }, process.env.JWT_SECRET, {
             expiresIn: "1h",
           });
-          const { _id, name, email, password } = userData;
+          const { _id, name, email, password } = checkEmail;
           return res.status(200).json({
             message: "user login successfully",
-            data: userData,
+            data: checkEmail,
             token: token,
-            user: { _id, name, email, username },
+            user: { _id, name, email},
           });
         } else {
           return res.status(400).json({ message: "Password Not Match" });
