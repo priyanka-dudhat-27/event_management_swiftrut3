@@ -1,17 +1,16 @@
 /* eslint-disable no-unused-vars */
-// src/components/Header.js
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import AuthContext from '../context/Authcontext'; 
+import AuthContext from '../context/Authcontext'; // Ensure this is the correct path and case
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 
 const Header = () => {
-  const { isAuthenticated, logout } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext); // Get user and logout
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    logout(); // This should update the user state to null
     toast.success('Logged out successfully!');
     navigate('/login');
   };
@@ -23,13 +22,8 @@ const Header = () => {
           <Link to="/">MyApp</Link>
         </div>
         <nav className="space-x-4">
-          <Link
-            to="/"
-            className="text-gray-600 hover:text-indigo-600 transition-colors"
-          >
-            Home
-          </Link>
-          {!isAuthenticated ? (
+          
+          {!user ? ( // Check for the user state
             <>
               <Link
                 to="/login"
@@ -45,12 +39,21 @@ const Header = () => {
               </Link>
             </>
           ) : (
-            <button
+            <>
+            <Link
+            to="/"
+            className="text-gray-600 hover:text-indigo-600 transition-colors"
+          >
+            Home
+          </Link>
+          <button
               onClick={handleLogout}
               className="text-red-600 hover:text-red-800 transition-colors"
             >
               Logout
             </button>
+            </>
+            
           )}
         </nav>
       </div>
@@ -59,7 +62,7 @@ const Header = () => {
 };
 
 Header.propTypes = {
-  isAuthenticated: PropTypes.bool,
+  user: PropTypes.object,
   logout: PropTypes.func,
 };
 

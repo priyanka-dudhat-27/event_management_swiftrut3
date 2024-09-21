@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import 'animate.css';
 
 const Register = () => {
@@ -92,6 +92,12 @@ const Register = () => {
             Register
           </button>
         </form>
+        <p className="mt-4 text-center">
+          Already have an account?{' '}
+          <Link to="/login" className="text-indigo-600 hover:underline">
+            Sign In
+          </Link>
+        </p>
       </div>
     </div>
   );
