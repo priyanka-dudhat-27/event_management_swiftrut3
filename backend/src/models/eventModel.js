@@ -4,7 +4,7 @@ const eventSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: trusted,
+      required: true,
     },
     image: {
       type: String,
@@ -46,10 +46,21 @@ const eventSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
-    likes: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
+    likes: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "USER",
+        },
+      ],
+      comments: [
+        {
+          comment: String,
+          user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "USER",
+          },
+        },
+      ],
   },
   {
     timestamps: true,
@@ -57,4 +68,4 @@ const eventSchema = new mongoose.Schema(
 );
 
 const Event = mongoose.model("Event", eventSchema);
-module.exports;
+export default Event;

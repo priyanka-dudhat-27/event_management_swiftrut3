@@ -29,7 +29,8 @@ const userSchema = mongoose.Schema(
     },
     image: {
       type: String,
-      default: "default.png",
+      default:
+        "https://res.cloudinary.com/mayurcloud21/image/upload/v1721210287/users/u0qrfanxqztl61j37odp.png",
     },
   },
   {
