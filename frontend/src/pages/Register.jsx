@@ -20,8 +20,8 @@ const Register = () => {
     e.preventDefault();
     setError('');
     try {
-      const response = await axios.post(`${BASE_URL}/event/getEvents`, {
-        name,          // Include name in the request body
+      const response = await axios.post(`${BASE_URL}/register`, {
+        name,          
         username,
         email,
         password

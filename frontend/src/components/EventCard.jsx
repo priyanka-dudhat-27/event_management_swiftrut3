@@ -4,7 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-const EventCard = ({ event }) => {
+const EventCard = ({ event, isAuthorized }) => {
     return (
         <div className="max-w-sm mx-2 my-4 rounded-lg overflow-hidden shadow-lg transition-transform transform hover:scale-105 bg-white border border-gray-200">
             <img
@@ -30,12 +30,19 @@ const EventCard = ({ event }) => {
                     <strong>Created By:</strong> {event.createdBy?.username || 'Unknown'}
                 </p>
             </div>
-            <div className="p-4 border-t border-gray-200">
+            <div className="p-4 border-t border-gray-200 flex justify-between items-center">
                 <Link to={`/event/${event._id}`}>
-                    <button className="w-full bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600 transition duration-300">
+                    <button className="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition duration-300">
                         View Details
                     </button>
                 </Link>
+                {isAuthorized && (
+                    <Link to={`/event/${event._id}/edit`}>
+                        <button className="bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition duration-300">
+                            Edit Event
+                        </button>
+                    </Link>
+                )}
             </div>
         </div>
     );
@@ -43,6 +50,7 @@ const EventCard = ({ event }) => {
 
 EventCard.propTypes = {
     event: PropTypes.shape({
+        _id: PropTypes.string.isRequired,
         title: PropTypes.string.isRequired,
         image: PropTypes.string.isRequired,
         eventStartDate: PropTypes.string.isRequired,
@@ -53,6 +61,7 @@ EventCard.propTypes = {
             username: PropTypes.string,
         }),
     }).isRequired,
+    isAuthorized: PropTypes.bool.isRequired, // New prop to check authorization
 };
 
 export default EventCard;

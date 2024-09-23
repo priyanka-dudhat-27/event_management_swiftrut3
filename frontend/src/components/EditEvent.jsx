@@ -3,13 +3,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 
+// Set your BASE_URL in a .env file and access it here
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const EditEvent = () => {
     const { eventId } = useParams();
     const [formData, setFormData] = useState({
         title: '',
-        image: null, // Change this to null initially
+        image: null,
         eventStartDate: '',
         eventEndDate: '',
         location: '',
@@ -21,19 +22,40 @@ const EditEvent = () => {
 
     useEffect(() => {
         const fetchEventData = async () => {
+            if (!eventId) {
+                setMessage('Event ID is missing.');
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setMessage('You have to log in first.');
+                navigate('/login'); // Redirect to login
+                return;
+            }
+
             try {
                 const response = await axios.get(`${BASE_URL}/event/getEventById/${eventId}`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                    headers: { Authorization: `Bearer ${token}` },
                 });
                 setFormData(response.data);
             } catch (error) {
                 console.error('Error fetching event data:', error.response ? error.response.data : error.message);
-                setMessage('Failed to load event data.');
+
+                // Prevent infinite loop on error
+                if (error.response && error.response.status === 401) {
+                    setMessage('You have to log in first.');
+                    navigate('/login'); // Redirect to login
+                } else {
+                    setMessage('Failed to load event data.');
+                    console.error('Cannot connect to server. Please try again later.');
+                }
             }
         };
 
         fetchEventData();
-    }, [eventId]);
+    }, []);
+
 
     const handleChange = (e) => {
         const { name, value, type, files } = e.target;
@@ -48,12 +70,19 @@ const EditEvent = () => {
         e.preventDefault();
         const uploadData = new FormData();
         uploadData.append('title', formData.title);
-        uploadData.append('image', formData.image); // Append the file
+        if (formData.image) {
+            uploadData.append('image', formData.image); // Append the file if present
+        }
         uploadData.append('eventStartDate', formData.eventStartDate);
         uploadData.append('eventEndDate', formData.eventEndDate);
         uploadData.append('location', formData.location);
         uploadData.append('eventType', formData.eventType);
         uploadData.append('attendees', formData.attendees);
+
+        // Log the FormData content to verify it
+        for (let [key, value] of uploadData.entries()) {
+            console.log(key, value); // This should print all keys and values in the FormData
+        }
 
         try {
             await axios.put(`${BASE_URL}/event/editEvent/${eventId}`, uploadData, {
@@ -69,6 +98,8 @@ const EditEvent = () => {
             setMessage('Failed to update event.');
         }
     };
+
+
 
     return (
         <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
@@ -88,13 +119,12 @@ const EditEvent = () => {
                     type="file"
                     name="image"
                     onChange={handleChange}
-                    required
                     className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
                 <input
                     type="date"
                     name="eventStartDate"
-                    value={formData.eventStartDate.split('T')[0]} // Format for input
+                    value={formData.eventStartDate ? formData.eventStartDate.split('T')[0] : ''}
                     onChange={handleChange}
                     required
                     className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -102,7 +132,7 @@ const EditEvent = () => {
                 <input
                     type="date"
                     name="eventEndDate"
-                    value={formData.eventEndDate.split('T')[0]} // Format for input
+                    value={formData.eventEndDate ? formData.eventEndDate.split('T')[0] : ''}
                     onChange={handleChange}
                     required
                     className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"

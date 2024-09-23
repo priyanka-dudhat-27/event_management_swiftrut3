@@ -15,7 +15,7 @@ const EventDetails = () => {
         const fetchEventDetails = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await axios.get(`${BASE_URL}/event/${eventId}`, {
+                const response = await axios.get(`${BASE_URL}/event//${eventId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },

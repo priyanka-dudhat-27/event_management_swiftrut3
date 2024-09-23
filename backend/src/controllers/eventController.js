@@ -28,7 +28,7 @@ const createEvent = async (req, res) => {
 const editEvent = async (req, res) => {
   const { eventId } = req.params;
   const { title, image, eventStartDate, eventEndDate, location, eventType, attendees } = req.body;
-
+  console.log("abcd",image,title)
   try {
       // Update event in the database
       const updatedEvent = await Event.findByIdAndUpdate(eventId, {

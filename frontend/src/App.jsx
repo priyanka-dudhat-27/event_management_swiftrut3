@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from './context/Authcontext';  
@@ -25,6 +25,7 @@ function App() {
             <Route path="/edit-event/:eventId" element={<EditEvent/>} />
             <Route path="/create-event" element={<EventForm/>}/>
             <Route path="/my-events" element={<MyEvents/>}/>
+            <Route path="*" element={<Navigate to="/" />} />
 
           </Routes>
           <ToastContainer />
