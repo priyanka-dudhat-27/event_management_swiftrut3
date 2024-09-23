@@ -2,7 +2,15 @@ import Event from "../models/eventModel.js";
 import { extractPublicId, deleteImageByUrl } from "../public/cloudinary.js";
 
 const createEvent = async (req, res) => {
-  const { title, image, eventStartDate, eventEndDate, location, eventType, attendees } = req.body;
+  const {
+    title,
+    image,
+    eventStartDate,
+    eventEndDate,
+    location,
+    eventType,
+    attendees,
+  } = req.body;
   const userId = req.user.id;
 
   const newEvent = new Event({
@@ -20,50 +28,54 @@ const createEvent = async (req, res) => {
     const savedEvent = await newEvent.save();
     res.status(201).json(savedEvent);
   } catch (error) {
-    console.error('Error creating event:', error.message); // More detailed error logging
-    res.status(500).json({ message: 'Internal server error', error: error.message });
+    console.error("Error creating event:", error.message); // More detailed error logging
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
 const editEvent = async (req, res) => {
   const { eventId } = req.params;
-  const { title, image, eventStartDate, eventEndDate, location, eventType, attendees } = req.body;
-  console.log("abcd",image,title)
-  try {
-      // Update event in the database
-      const updatedEvent = await Event.findByIdAndUpdate(eventId, {
-          title,
-          image,
-          eventStartDate,
-          eventEndDate,
-          location,
-          eventType,
-          attendees,
-      }, { new: true });
+  const {
+    title,
+    eventStartDate,
+    eventEndDate,
+    location,
+    eventType,
+    attendees,
+    image,
+  } = req.body;
+  console.log(image, "<<<<<<<<<<<<<<<<<<<<<<<<< this is image");
+  const existingEvent = await Event.findByIdAndUpdate(eventId, {
+    title,
+    eventStartDate,
+    eventEndDate,
+    location,
+    eventType,
+    attendees,
+    image,
+  });
+  console.log(existingEvent, "<<<<<<<<<<<<<<<<<<<<<<<<< this is existingEvent");
+  const updatedEvent = await existingEvent.save();
+  console.log(updatedEvent, "<<<<<<<<<<<<<<<<<<<<<<<<< this is updatedEvent");
 
-      if (!updatedEvent) {
-          return res.status(404).json({ message: 'Event not found' });
-      }
-
-      return res.status(200).json({ message: 'Event updated successfully', event: updatedEvent });
-  } catch (error) {
-      return res.status(500).json({ message: error.message });
-  }
+  return res
+    .status(200)
+    .json({ message: "Event updated successfully", event: updatedEvent });
 };
-
-
 
 const deleteEvent = async (req, res) => {
   const { id } = req.params;
 
   try {
-      const deletedEvent = await Event.findByIdAndDelete(id);
-      if (!deletedEvent) {
-          return res.status(404).json({ message: 'Event not found' });
-      }
-      return res.status(200).json({ message: 'Event deleted successfully' });
+    const deletedEvent = await Event.findByIdAndDelete(id);
+    if (!deletedEvent) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    return res.status(200).json({ message: "Event deleted successfully" });
   } catch (error) {
-      return res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -79,7 +91,7 @@ const getEvents = async (req, res) => {
 
     return res.json({ events });
   } catch (error) {
-    console.error('Error fetching events:', error.message);
+    console.error("Error fetching events:", error.message);
     return res.status(500).json({ message: error.message });
   }
 };
@@ -88,26 +100,25 @@ const getEventById = async (req, res) => {
   const { id } = req.params;
 
   try {
-      // Fetch the event by ID and populate related fields
-      const event = await Event.findById(id)
-          .populate('createdBy', 'username image') // Ensure this matches your schema
-          .populate('comments.user', 'username');
+    // Fetch the event by ID and populate related fields
+    const event = await Event.findById(id)
+      .populate("createdBy", "username image") // Ensure this matches your schema
+      .populate("comments.user", "username");
 
-      // Check if the event exists
-      if (!event) {
-          return res.status(404).json({ message: 'Event not found' });
-      }
+    // Check if the event exists
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
 
-      // Return the event details
-      return res.status(200).json(event);
+    // Return the event details
+    return res.status(200).json(event);
   } catch (error) {
-      // Handle any errors that occur
-      return res.status(500).json({ message: error.message });
+    // Handle any errors that occur
+    return res.status(500).json({ message: error.message });
   }
 };
 
 export default getEventById;
-
 
 export { getEventById };
 

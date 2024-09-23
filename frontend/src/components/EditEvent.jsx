@@ -1,9 +1,7 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 
-// Set your BASE_URL in a .env file and access it here
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const EditEvent = () => {
@@ -18,6 +16,7 @@ const EditEvent = () => {
         attendees: 1,
     });
     const [message, setMessage] = useState('');
+    const [imagePreview, setImagePreview] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -30,7 +29,7 @@ const EditEvent = () => {
             const token = localStorage.getItem('token');
             if (!token) {
                 setMessage('You have to log in first.');
-                navigate('/login'); // Redirect to login
+                navigate('/login');
                 return;
             }
 
@@ -39,67 +38,85 @@ const EditEvent = () => {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setFormData(response.data);
+                setImagePreview(response.data.image);
             } catch (error) {
-                console.error('Error fetching event data:', error.response ? error.response.data : error.message);
-
-                // Prevent infinite loop on error
+                console.error('Error fetching event data:', error);
                 if (error.response && error.response.status === 401) {
                     setMessage('You have to log in first.');
-                    navigate('/login'); // Redirect to login
+                    navigate('/login');
                 } else {
                     setMessage('Failed to load event data.');
-                    console.error('Cannot connect to server. Please try again later.');
                 }
             }
         };
 
         fetchEventData();
-    }, []);
-
+    }, [eventId, navigate]);
 
     const handleChange = (e) => {
         const { name, value, type, files } = e.target;
         if (type === 'file') {
-            setFormData({ ...formData, image: files[0] }); // Store the file
+            const file = files[0];
+            setFormData({ ...formData, image: file });
+            setImagePreview(URL.createObjectURL(file));
         } else {
             setFormData({ ...formData, [name]: value });
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const uploadData = new FormData();
-        uploadData.append('title', formData.title);
-        if (formData.image) {
-            uploadData.append('image', formData.image); // Append the file if present
-        }
-        uploadData.append('eventStartDate', formData.eventStartDate);
-        uploadData.append('eventEndDate', formData.eventEndDate);
-        uploadData.append('location', formData.location);
-        uploadData.append('eventType', formData.eventType);
-        uploadData.append('attendees', formData.attendees);
-
-        // Log the FormData content to verify it
-        for (let [key, value] of uploadData.entries()) {
-            console.log(key, value); // This should print all keys and values in the FormData
-        }
+    const uploadImage = async (image) => {
+        const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/cantacloudy2/image/upload';
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', image);
+        uploadFormData.append('upload_preset', 'instaclone');
 
         try {
-            await axios.put(`${BASE_URL}/event/editEvent/${eventId}`, uploadData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-            setMessage('Event updated successfully!');
-            navigate('/my-events');
+            const response = await axios.post(cloudinaryUrl, uploadFormData);
+            return response.data.secure_url;
         } catch (error) {
-            console.error('Error updating event:', error.response ? error.response.data : error.message);
-            setMessage('Failed to update event.');
+            console.error('Image upload failed:', error);
+            throw new Error('Image upload failed');
         }
     };
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMessage('');
 
+        try {
+            let imageUrl = formData.image;
+            if (formData.image instanceof File) {
+                imageUrl = await uploadImage(formData.image);
+            }
+
+            const updatedEvent = {
+                title: formData.title,
+                eventStartDate: formData.eventStartDate,
+                eventEndDate: formData.eventEndDate,
+                location: formData.location,
+                eventType: formData.eventType,
+                attendees: formData.attendees,
+                image: imageUrl,
+            };
+
+            const response = await axios.put(`${BASE_URL}/event/editEvent/${eventId}`, updatedEvent, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            setMessage('Event updated successfully!');
+            navigate('/my-events');
+        } catch (error) {
+            console.error('Error updating event:', error);
+            if (error.response && error.response.status) {
+                setMessage(`Failed to update event: ${error.response.status} - ${error.response.data.message}`);
+            } else {
+                setMessage('Failed to update event.');
+            }
+        }
+    };
 
     return (
         <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
@@ -115,12 +132,17 @@ const EditEvent = () => {
                     className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="Event Title"
                 />
-                <input
-                    type="file"
-                    name="image"
-                    onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div>
+                    <input
+                        type="file"
+                        name="image"
+                        onChange={handleChange}
+                        className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    {imagePreview && (
+                        <img src={imagePreview} alt="Event preview" className="mt-2 max-w-full h-auto" />
+                    )}
+                </div>
                 <input
                     type="date"
                     name="eventStartDate"
