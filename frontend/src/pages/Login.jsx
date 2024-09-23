@@ -37,6 +37,7 @@ const Login = () => {
 
       // Call the login function from AuthContext
       login(response.data.token);
+      localStorage.setItem('token', response.data.token);
       toast.success('Login successful! Redirecting...');
       navigate('/');
     } catch (error) {

@@ -13,9 +13,9 @@ const isAuth = async (req, res, next) => {
   jwt.verify(token, process.env.JWT_SECRET, async (err, payload) => {
     if (err) {
       return res.json({
-        message: "Invalid or Expired token,Please Login again",
-        status: 0,
+        message: "Invalid or Expired token,Please Login again",err,
       });
+      
     } else {
       try {
         const { _id } = payload;

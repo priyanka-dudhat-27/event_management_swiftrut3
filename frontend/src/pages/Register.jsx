@@ -13,13 +13,14 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const BASE_URL = 'http://localhost:8001';
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      const response = await axios.post(`${BASE_URL}/register`, {
+      const response = await axios.post(`${BASE_URL}/event/getEvents`, {
         name,          // Include name in the request body
         username,
         email,

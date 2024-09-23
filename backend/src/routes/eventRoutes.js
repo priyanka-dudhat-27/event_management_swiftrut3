@@ -1,18 +1,42 @@
-import express from "express";
-import isAuth from "../middlewares/authMiddlware.js"
-import { createEvent,editEvent,deleteEvent,getEvents,getMyEvents, likeEvent,addComment,deleteComment} from "../controllers/eventController.js";
+import express from "express"; 
+import isAuth from "../middlewares/authMiddlware.js";
+import cloudinary from '../utils/cloudinary.js';
+import multer from 'multer';
+import { CloudinaryStorage } from 'multer-storage-cloudinary'; // Import CloudinaryStorage
 
-const routes=express.Router();
+import {
+  createEvent,
+  editEvent,
+  deleteEvent,
+  getEvents,
+  getMyEvents,
+  likeEvent,
+  addComment,
+  deleteComment,
+  getEventById
+} from "../controllers/eventController.js";
 
-routes.get("/getEvents",isAuth,getEvents)
-routes.get("/getMyEvents/:id",isAuth,getMyEvents)
+const routes = express.Router();
 
-routes.post("/createEvent",isAuth,createEvent)
-routes.patch("/editEvent",isAuth,editEvent)
-routes.patch("/deleteEvent/:id",isAuth,deleteEvent)
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'events',
+      allowedFormats: ['jpg', 'png', 'jpeg'],
+    },
+});
 
-routes.get("/like/:id",isAuth,likeEvent)
-routes.post("/addComment/:id",isAuth,addComment)
-routes.delete("/deleteComment",isAuth,deleteComment)
+const upload = multer({ storage: storage });
+
+routes.get("/getEvents", getEvents);
+routes.get('/:id', getEventById);
+routes.get("/getMyEvents/:id", isAuth, getMyEvents);
+routes.post("/createEvent", upload.single('image'), isAuth, createEvent);
+routes.put("/editEvent/:eventId", isAuth, editEvent);
+routes.get("/getEventById/:id", isAuth, getEventById);
+routes.delete("/deleteEvent/:id", isAuth, deleteEvent);
+routes.get("/like/:id", isAuth, likeEvent);
+routes.post("/addComment/:id", isAuth, addComment);
+routes.delete("/deleteComment", isAuth, deleteComment);
 
 export default routes;

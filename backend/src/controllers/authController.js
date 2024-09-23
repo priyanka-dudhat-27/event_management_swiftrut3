@@ -63,7 +63,7 @@ const login = async (req, res) => {
             message: "user login successfully",
             data: checkEmail,
             token: token,
-            user: { _id, name, email},
+            user: { _id, name, email },
           });
         } else {
           return res.status(400).json({ message: "Password Not Match" });
